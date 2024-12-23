@@ -1,0 +1,18 @@
+export * as AntIcon from 'react-icons/ai';
+export * as BSIcon from 'react-icons/bs';
+export * as Feather from 'react-icons/fi';
+export * as GameIcons from 'react-icons/gi';
+export * as IconMoon from 'react-icons/im';
+export * as MdIcons from 'react-icons/md';
+export * as OctIcon from 'react-icons/go';
+export * as RemixIcon from 'react-icons/ri';
+export * from './arrays';
+export * from './classes';
+export * from './colors';
+export * from './interfaces';
+export * from './regexs';
+export * from './roles';
+export * from './sizes';
+export * from './strings';
+export * from './types';
+export * from './values';

@@ -1,0 +1,7 @@
+export enum Sizes {
+  TABLEBUTTON = 17,
+  SORTBUTTON = 17,
+  STANDARTBUTTON = 20,
+  PAGEBUTTON = 20,
+  PHONEBUTTON = 30,
+}

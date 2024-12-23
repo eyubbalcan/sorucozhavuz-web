@@ -1,0 +1,54 @@
+$btn-width: 60px;
+$btn-between: $btn-width + 15px;
+$btn-right: 10px;
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: auto;
+}
+
+.video {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.captured-image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.action-btn,
+.switch-btn {
+  position: absolute;
+  bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 24px;
+  width: $btn-width;
+  height: $btn-width;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.action-btn {
+  right: $btn-between;
+}
+
+.switch-btn {
+  right: $btn-right;
+}
+
+.action-btn:hover,
+.switch-btn:hover {
+  transform: scale(1.1);
+}
