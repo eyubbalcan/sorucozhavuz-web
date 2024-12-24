@@ -7,3 +7,8 @@ export interface ILessonRes extends CONSTANTS.IResponseModel {
     slug: string;
 }
 
+export interface ILessonReq extends CONSTANTS.IRequestModel {
+    name: string;
+    lessonType: string;
+    slug: string;
+}

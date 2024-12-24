@@ -36,7 +36,6 @@ const ImageCropModal: React.FC<IImageCropModalProps> = ({
     if (cropped === null) return;
     const url = URL.createObjectURL(cropped);
     onSave(url, cropped);
-    onClose();
   };
 
   const handleRotate = (direction: "left" | "right") => {
