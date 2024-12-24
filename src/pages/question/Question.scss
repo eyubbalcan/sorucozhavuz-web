@@ -139,9 +139,6 @@
   font-size: 18px !important; /* Placeholder yazısının boyutunu ayarlar */
 }
 
-
-
-
 .filed-buttons{
   display: flex;
   justify-content: space-between;
@@ -175,4 +172,8 @@
   justify-content: center;  /* Yatayda ortalamak için */
   align-items: center;      /* Dikeyde ortalamak için */
   height: 100%;             /* Col'un yüksekliğini tam kullanmak için */
+}
+
+.last-table-4 td{
+  width: 50&;
 }

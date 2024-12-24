@@ -70,7 +70,14 @@ const QuestionList: React.FC = () => {
   };
 
   const questionList = useMemo(() => {
-    if (_.isEmpty(questions)) return <p>Soru Bulunamadı.</p>;
+    if (_.isEmpty(questions))
+      return (
+        <tr>
+          <td colSpan={8}>
+            <p>Soru Bulunamadı.</p>
+          </td>
+        </tr>
+      );
 
     return questions.map((question) => {
       return (

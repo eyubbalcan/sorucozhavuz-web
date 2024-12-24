@@ -1,6 +1,6 @@
 import "./Question.scss";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, ImageCropModal, Tooltip } from "../../components";
+import { Camera, ImageCropModal } from "../../components";
 import _ from "lodash";
 import * as SERVICES from "../../services";
 import * as CONSTANTS from "../../constants";
@@ -16,11 +16,22 @@ import { checkRoles } from "../../utils";
 
 const publishers = ["Hız Yayınları", "3D Yayınları"];
 const stepTitles = ["Ders", "Soru", "Görsel", "Metin", "Şekil", "Son"];
+const classRooms = [
+  "5.Sınıf",
+  "6.Sınıf",
+  "7.Sınıf",
+  "8.Sınıf",
+  "9.Sınıf",
+  "10.Sınıf",
+  "11.Sınıf",
+  "12.Sınıf",
+];
 
 const QuestionSend: React.FC = () => {
   const [answerTypes, setAnswerTypes] = useState<IAnswerTypeRes[]>([]);
   const [lesson, setLesson] = useState<string>("");
   const [publisher, setPublisher] = useState<string>("");
+  const [classRoom, setClassRoom] = useState<string>("");
   const [testName, setTestName] = useState<string>("");
   const [questionPhoto, setQuestionPhoto] = useState<string | null>(null);
   const [answerPhoto, setAnswerPhoto] = useState<string | null>(null);
@@ -180,6 +191,20 @@ const QuestionSend: React.FC = () => {
                 </option>
               ))}
           </select>
+          <select
+            onChange={(e) => {
+              setClassRoom(e.target.value);
+            }}
+            className="form-select form-select-lg mb-3"
+            defaultValue={publisher}
+          >
+            <option value={""}>Sınıf Seçiniz</option>
+            {classRooms.map((classRoom) => (
+              <option key={classRoom} value={classRoom}>
+                {classRoom}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             className="form-control"
@@ -270,9 +295,14 @@ const QuestionSend: React.FC = () => {
             className="form-control"
             placeholder="Metin Giriniz"
             value={answerText ?? ""}
-            rows={6}
+            rows={8}
             onChange={(e) => {
               setAnswerText(e.target.value);
+            }}
+            style={{
+              resize: "none",
+              overflowX: "hidden",
+              whiteSpace: "pre-line",
             }}
           />
         </div>
@@ -285,7 +315,7 @@ const QuestionSend: React.FC = () => {
       <>
         {_.isEmpty(shapePhoto) ? (
           <div className="row mt-3 justify-content-center">
-            <div className="col-sx-12 col-md-3 m-3">
+            <div className="col-sx-12 col-md-3 m-3 centered-container">
               <img
                 src={questionPhoto ?? ""}
                 alt="question"
@@ -293,7 +323,7 @@ const QuestionSend: React.FC = () => {
                 style={{ height: "300px", alignItems: "center" }}
               />
             </div>
-            <div className="col-sx-12 col-md-3 m-3">
+            <div className="col-sx-12 col-md-3 m-3 centered-container">
               <img
                 src={answerPhoto ?? ""}
                 alt="question"
@@ -301,8 +331,20 @@ const QuestionSend: React.FC = () => {
                 style={{ height: "300px" }}
               />
             </div>
-            <div className="col-sx-12 col-md-3 m-3 border border-secondary">
-              <p>{answerText}</p>
+            <div className="col-sx-12 col-md-3 m-3 centered-container">
+              <textarea
+                className=""
+                readOnly
+                style={{
+                  minWidth: "300px",
+                  minHeight: "300px",
+                  resize: "none",
+                  overflowX: "hidden",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {answerText}
+              </textarea>
             </div>
           </div>
         ) : (
@@ -327,7 +369,21 @@ const QuestionSend: React.FC = () => {
             </div>
             <div className="row justify-content-center">
               <div className="col-sm-12 col-md-4 m-3 centered-container">
-                <p className="border border-secondary">{answerText}</p>
+                <div>
+                  <textarea
+                    className=""
+                    readOnly
+                    style={{
+                      minWidth: "300px",
+                      minHeight: "300px",
+                      resize: "none",
+                      overflowX: "hidden",
+                      whiteSpace: "pre-line",
+                    }}
+                  >
+                    {answerText}
+                  </textarea>
+                </div>
               </div>
               <div className="col-sm-12 col-md-4 m-3 centered-container">
                 <img
@@ -458,6 +514,13 @@ const QuestionSend: React.FC = () => {
         textAnswer: testName,
       });
 
+      if(!_.isEmpty(classRoom)){
+        payload.answers.push({
+          answerType: getAnswerTypeId(2),
+          textAnswer: classRoom,
+        });
+      }
+
       const question = await SERVICES.AddQuestionAndSolves(payload);
 
       if (question.status >= 200 && question.status < 300) {
@@ -559,18 +622,14 @@ const QuestionSend: React.FC = () => {
             ) &&
               step === 1)) && (
             <div className="d-flex me-2">
-              <Tooltip title="Soruyu kayıt eder. Aynı ders, yayınevi ve test adı ile soru ekler.">
-                <div className="next-btn" onClick={() => onSubmit(true)}>
-                  <span className="align-middle">DEVAM</span>
-                  <span className="material-symbols-rounded">reply_all</span>
-                </div>
-              </Tooltip>
-              <Tooltip title="Soruyu kayıt eder. İlk adıma döner.">
-                <div className="finish-btn" onClick={() => onSubmit(false)}>
-                  <span className="align-middle">BİTİR</span>
-                  <span className="material-symbols-rounded">send</span>
-                </div>
-              </Tooltip>
+              <div className="next-btn" onClick={() => onSubmit(true)}>
+                <span className="align-middle">DEVAM</span>
+                <span className="material-symbols-rounded">reply_all</span>
+              </div>
+              <div className="finish-btn" onClick={() => onSubmit(false)}>
+                <span className="align-middle">BİTİR</span>
+                <span className="material-symbols-rounded">send</span>
+              </div>
             </div>
           )}
         </div>

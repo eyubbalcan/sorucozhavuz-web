@@ -49,7 +49,7 @@ const Header: React.FC = () => {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  {getLocalFullName()}
+                  <span>{getLocalFullName()}</span>
                 </a>
                 <ul
                   className="dropdown-menu dropdown-menu-end"
