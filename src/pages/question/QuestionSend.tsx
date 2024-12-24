@@ -223,48 +223,62 @@ const QuestionSend: React.FC = () => {
     return (
       <>
         <div className="row mt-3 justify-content-center text-center">
-          {step === 1 ? (
+          {step === 1 && questionPhoto === null ? (
             <h5>Sorunun Fotoğrafını Ekleyiniz.</h5>
-          ) : step === 2 ? (
+          ) : step === 2 && answerPhoto === null ? (
             <h5>Cevabın Fotoğrafı Ekleyiniz.</h5>
-          ) : step === 4 ? (
+          ) : step === 4 && shapePhoto === null ? (
             <h5>Şeklin Fotoğrafı Ekleyiniz.</h5>
           ) : (
             <></>
           )}
-          <div className="col-sm-12 col-md-6">
-            {uploadType === 2 ? (
-              <Camera setPhoto={setCropped} />
-            ) : (
-              <img
-                src={uploadMethods.value ?? "https://fakeimg.pl/300x300?text=+"}
-                alt="upload"
-                className="img-fluid"
-                style={{ maxHeight: "300px" }}
-              />
+          {((step === 1 && questionPhoto) ||
+            (step === 2 && answerPhoto) ||
+            (step === 4 && shapePhoto)) && (
+            <div className="col-sm-12 col-md-6">
+              {uploadType === 2 ? (
+                <Camera setPhoto={setCropped} />
+              ) : (
+                <img
+                  src={uploadMethods.value!}
+                  alt="upload"
+                  className="img-fluid"
+                  style={{ maxHeight: "300px" }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+        {step >= 1 && step <= 4 && (
+          <div className="d-flex mt-3 justify-content-center text-center">
+            {((step === 1 && questionPhoto) ||
+              (step === 2 && answerPhoto) ||
+              (step === 4 && shapePhoto)) && (
+              <div className="back-btn" onClick={onClear}>
+                <span className="material-symbols-rounded">delete</span>
+                <span className="align-middle">TEMİZLE</span>
+              </div>
             )}
           </div>
-        </div>
+        )}
         {_.isEmpty(uploadMethods.value) && (
           <div className="d-flex mt-3 justify-content-center text-center">
             <div className="filed-buttons">
               <button className="next-btn" onClick={() => setUploadType(2)}>
-                <span className="material-symbols-rounded">camera</span>
+                <span className="align-middle">Kamera</span>
+                <span className="material-symbols-rounded">photo_camera</span>
               </button>
-
-              <div className="input-group">
-                <input type="text" className="select-form" />
-                <button
-                  className="input-group-button"
-                  onClick={() => {
-                    setUploadType(1);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.click();
-                    }
-                  }}
-                >
-                  Gözat
-                </button>
+              <button
+                className="next-btn"
+                onClick={() => {
+                  setUploadType(1);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+                <span className="align-middle">Galeri</span>
+                <span className="material-symbols-rounded">image</span>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -279,7 +293,7 @@ const QuestionSend: React.FC = () => {
                     }
                   }}
                 />
-              </div>
+              </button>
             </div>
           </div>
         )}
@@ -292,7 +306,7 @@ const QuestionSend: React.FC = () => {
       <div className="row mt-3 justify-content-center">
         <div className="col-sm-12 col-md-6">
           <textarea
-            className="form-control"
+            className="form-control text_area"
             placeholder="Metin Giriniz"
             value={answerText ?? ""}
             rows={8}
@@ -303,6 +317,7 @@ const QuestionSend: React.FC = () => {
               resize: "none",
               overflowX: "hidden",
               whiteSpace: "pre-line",
+              borderRadius: "0px",
             }}
           />
         </div>
@@ -316,60 +331,75 @@ const QuestionSend: React.FC = () => {
         {_.isEmpty(shapePhoto) ? (
           <div className="row mt-3 justify-content-center">
             <div className="col-sx-12 col-md-3 m-3 centered-container">
-              <img
-                src={questionPhoto ?? ""}
-                alt="question"
-                className="img-fluid "
-                style={{ height: "300px", alignItems: "center" }}
-              />
-            </div>
-            <div className="col-sx-12 col-md-3 m-3 centered-container">
-              <img
-                src={answerPhoto ?? ""}
-                alt="question"
-                className="img-fluid"
-                style={{ height: "300px" }}
-              />
-            </div>
-            <div className="col-sx-12 col-md-3 m-3 centered-container">
-              <textarea
-                className=""
-                readOnly
-                style={{
-                  minWidth: "300px",
-                  minHeight: "300px",
-                  resize: "none",
-                  overflowX: "hidden",
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {answerText}
-              </textarea>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="row mt-3 justify-content-center">
-              <div className="col-sm-12 col-md-4 m-3 centered-container">
-                <img
-                  src={questionPhoto ?? ""}
-                  alt="question"
-                  className="img-fluid"
-                  style={{ height: "300px" }}
-                />
-              </div>
-              <div className="col-sm-12 col-md-4 m-3 centered-container">
-                <img
-                  src={answerPhoto ?? ""}
-                  alt="question"
-                  className="img-fluid"
-                  style={{ height: "300px" }}
-                />
+              <div>
+                <div className="finish-edit">
+                  <p
+                    style={{
+                      fontWeight: "600",
+                      textAlign: "center",
+                      paddingTop: "10px",
+                    }}
+                  >
+                    Soru
+                  </p>
+                  <p className="finish-edit-button" onClick={() => setStep(1)}>
+                    Düzenle
+                  </p>
+                </div>
+                <div className="finish-base">
+                  <img
+                    src={questionPhoto ?? ""}
+                    alt="question"
+                    className="img-fluid"
+                    style={{ height: "300px" }}
+                  />
+                </div>
               </div>
             </div>
-            <div className="row justify-content-center">
-              <div className="col-sm-12 col-md-4 m-3 centered-container">
-                <div>
+            <div className="col-sx-12 col-md-3 m-3 centered-container">
+              <div>
+                <div className="finish-edit">
+                  <p
+                    style={{
+                      fontWeight: "600",
+                      textAlign: "center",
+                      paddingTop: "10px",
+                    }}
+                  >
+                    Görsel Cevap
+                  </p>
+                  <p className="finish-edit-button" onClick={() => setStep(2)}>
+                    Düzenle
+                  </p>
+                </div>
+                <div className="finish-base">
+                  <img
+                    src={answerPhoto ?? ""}
+                    alt="question"
+                    className="img-fluid"
+                    style={{ height: "300px" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-sx-12 col-md-3 m-3 centered-container">
+              <div>
+                <div className="finish-edit">
+                  <p
+                    style={{
+                      fontWeight: "600",
+                      textAlign: "center",
+                      paddingTop: "10px",
+                    }}
+                  >
+                    Metin Cevabı
+                  </p>
+                  <p className="finish-edit-button" onClick={() => setStep(3)}>
+                    Düzenle
+                  </p>
+                </div>
+                <div className="finish-base">
                   <textarea
                     className=""
                     readOnly
@@ -379,19 +409,146 @@ const QuestionSend: React.FC = () => {
                       resize: "none",
                       overflowX: "hidden",
                       whiteSpace: "pre-line",
+                      textIndent: "20px",
+                      border: "none",
                     }}
                   >
                     {answerText}
                   </textarea>
                 </div>
               </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="row mt-3 justify-content-center">
               <div className="col-sm-12 col-md-4 m-3 centered-container">
-                <img
-                  src={shapePhoto ?? ""}
-                  alt="question"
-                  className="img-fluid"
-                  style={{ height: "300px" }}
-                />
+                <div>
+                  <div className="finish-edit">
+                    <p
+                      style={{
+                        fontWeight: "600",
+                        textAlign: "center",
+                        paddingTop: "10px",
+                      }}
+                    >
+                      Soru
+                    </p>
+                    <p
+                      className="finish-edit-button"
+                      onClick={() => setStep(1)}
+                    >
+                      Düzenle
+                    </p>
+                  </div>
+                  <div className="finish-base">
+                    <img
+                      src={questionPhoto ?? ""}
+                      alt="question"
+                      className="img-fluid"
+                      style={{ height: "300px" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <div>
+                  <div className="finish-edit">
+                    <p
+                      style={{
+                        fontWeight: "600",
+                        textAlign: "center",
+                        paddingTop: "10px",
+                      }}
+                    >
+                      Görsel Cevap
+                    </p>
+                    <p
+                      className="finish-edit-button"
+                      onClick={() => setStep(2)}
+                    >
+                      Düzenle
+                    </p>
+                  </div>
+                  <div className="finish-base">
+                    <img
+                      src={answerPhoto ?? ""}
+                      alt="question"
+                      className="img-fluid"
+                      style={{ height: "300px" }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row justify-content-center">
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <div>
+                  <div className="finish-edit">
+                    <p
+                      style={{
+                        fontWeight: "600",
+                        textAlign: "center",
+                        paddingTop: "10px",
+                      }}
+                    >
+                      Metin Cevabı
+                    </p>
+                    <p
+                      className="finish-edit-button"
+                      onClick={() => setStep(3)}
+                    >
+                      Düzenle
+                    </p>
+                  </div>
+                  <div className="finish-base">
+                    <textarea
+                      className=""
+                      readOnly
+                      style={{
+                        minWidth: "300px",
+                        minHeight: "300px",
+                        resize: "none",
+                        overflowX: "hidden",
+                        whiteSpace: "pre-line",
+                        textIndent: "20px",
+                        border: "none",
+                      }}
+                    >
+                      {answerText}
+                    </textarea>
+                  </div>
+                </div>
+              </div>
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <div>
+                  <div className="finish-edit">
+                    <p
+                      style={{
+                        fontWeight: "600",
+                        textAlign: "center",
+                        paddingTop: "10px",
+                      }}
+                    >
+                      Şekil
+                    </p>
+                    <p
+                      className="finish-edit-button"
+                      onClick={() => setStep(4)}
+                    >
+                      Düzenle
+                    </p>
+                  </div>
+                  <div className="finish-base">
+                    <img
+                      src={shapePhoto ?? ""}
+                      alt="question"
+                      className="img-fluid"
+                      style={{ height: "300px" }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </>
@@ -514,7 +671,7 @@ const QuestionSend: React.FC = () => {
         textAnswer: testName,
       });
 
-      if(!_.isEmpty(classRoom)){
+      if (!_.isEmpty(classRoom)) {
         payload.answers.push({
           answerType: getAnswerTypeId(2),
           textAnswer: classRoom,
@@ -574,7 +731,7 @@ const QuestionSend: React.FC = () => {
               <div className={`step ${step === index ? "active" : undefined}`}>
                 {index + 1}
               </div>
-              <span>{title}</span>
+              <span className="step-title">{title}</span>
             </div>
           ))}
         </div>
@@ -596,12 +753,7 @@ const QuestionSend: React.FC = () => {
             <span className="material-symbols-rounded">arrow_left_alt</span>
             <span className="align-middle">GERİ</span>
           </div>
-          {step >= 1 && step <= 4 && (
-            <div className="back-btn" onClick={onClear}>
-              <span className="material-symbols-rounded">delete</span>
-              <span className="align-middle">TEMİZLE</span>
-            </div>
-          )}
+
           {step !== 5 &&
             (checkRoles(
               CONSTANTS.Roles.TESTER_SOLVER,
