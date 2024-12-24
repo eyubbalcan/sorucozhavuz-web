@@ -31,15 +31,15 @@ const toastError = (error: AxiosError<any>) => {
 
 const instance = axios.create({
   baseURL: API_URL,
-  headers:{
+  headers: {
     "Content-Type": "application/json",
-  }
+  },
 });
 
 instance.interceptors.request.use(
   (config) => {
     config.headers.Authorization = `Bearer ${getLocalToken()}`;
-    loaderShow();
+    if ((config.url?.indexOf("/file") ?? -1) < 0) loaderShow();
     return config;
   },
   (error) => {

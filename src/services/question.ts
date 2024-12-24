@@ -4,7 +4,8 @@ import {
   IImageFileRes,
   IAddQuestionReq,
   IQuestionRes,
-  IAnswerReq,
+  IAddQuestionAndSolveReq,
+  IAnswerTypeRes,
 } from "../models";
 import api from "./api";
 import { API_URL } from "../route";
@@ -28,7 +29,9 @@ export const AddQuestion = async (question: IAddQuestionReq) => {
   return response;
 };
 
-export const GetQuestionsAndSolve = async (question: IAnswerReq) => {
+export const AddQuestionAndSolves = async (
+  question: IAddQuestionAndSolveReq
+) => {
   const response: AxiosResponse<IQuestionRes[]> = await api.post(
     `/question/createAndSolve`,
     question
@@ -39,6 +42,13 @@ export const GetQuestionsAndSolve = async (question: IAnswerReq) => {
 export const GetQuestions = async (lessonId: string) => {
   const response: AxiosResponse<IQuestionRes[]> = await api.get(
     `/question/questionsByLesson/${lessonId}`
+  );
+  return response;
+};
+
+export const GetAnswerTypes = async () => {
+  const response: AxiosResponse<IAnswerTypeRes[]> = await api.get(
+    `/answerType`
   );
   return response;
 };

@@ -6,14 +6,14 @@ import * as Fa from "react-icons/fa";
 import cropImage from "../utils/cropImage";
 import _ from "lodash";
 
-interface ImageCropModalProps {
+interface IImageCropModalProps {
   imageFile?: File | null;
   imageUrl?: string | null;
   onClose: () => void;
-  onSave: (croppedImage: string, croppedFile: File) => void;
+  onSave: (url: string, file: File) => void;
 }
 
-const ImageCropModal: React.FC<ImageCropModalProps> = ({
+const ImageCropModal: React.FC<IImageCropModalProps> = ({
   imageFile,
   imageUrl,
   onClose,
@@ -33,7 +33,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   const handleSave = async () => {
     const cropped = await cropImage(imageRef, crop, rotation);
-    if (cropped === null) return;    
+    if (cropped === null) return;
     const url = URL.createObjectURL(cropped);
     onSave(url, cropped);
     onClose();

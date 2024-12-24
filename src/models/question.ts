@@ -40,6 +40,14 @@ export interface IAnswerReq extends CONSTANTS.IRequestModel {
   booleanAnswer?: boolean | null;
 }
 
+export class AnswerReq implements IAnswerReq {
+  answerType: string = "";
+  fileAnswer?: string | null | undefined;
+  textAnswer?: string | null | undefined;
+  numberAnswer?: number | null | undefined;
+  booleanAnswer?: boolean | null | undefined;
+}
+
 export interface IQuestionRes extends CONSTANTS.IResponseModel {
   _id: string;
 }
@@ -54,4 +62,10 @@ export interface IQuestionRes extends CONSTANTS.IResponseModel {
   solvedBy: IUserRes | null;
   controlledBy: IUserRes | null;
   assignedTo: IUserRes | null;
+}
+
+export interface IAnswerTypeRes extends CONSTANTS.IResponseModel {
+  _id: string;
+  code: number;
+  name: string;
 }

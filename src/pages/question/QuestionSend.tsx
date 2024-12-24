@@ -1,22 +1,25 @@
 import "./Question.scss";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Camera, ImageCropModal } from "../../components";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, ImageCropModal, Tooltip } from "../../components";
 import _ from "lodash";
 import * as SERVICES from "../../services";
 import * as CONSTANTS from "../../constants";
 import { toast } from "react-toastify";
 import {
+  IAddQuestionAndSolveReq,
+  IAnswerTypeRes,
   // IAddQuestionAndSolveReq,
   // IAddQuestionReq,
   ILessonRes,
 } from "../../models";
-import { useDropzone } from "react-dropzone";
 import { checkRoles } from "../../utils";
 
 const publishers = ["Hız Yayınları", "3D Yayınları"];
+const stepTitles = ["Ders", "Soru", "Görsel", "Metin", "Şekil", "Son"];
 
 const QuestionSend: React.FC = () => {
-  const [selectedLesson, setSelectedLesson] = useState<string>("");
+  const [answerTypes, setAnswerTypes] = useState<IAnswerTypeRes[]>([]);
+  const [lesson, setLesson] = useState<string>("");
   const [publisher, setPublisher] = useState<string>("");
   const [testName, setTestName] = useState<string>("");
   const [questionPhoto, setQuestionPhoto] = useState<string | null>(null);
@@ -27,16 +30,22 @@ const QuestionSend: React.FC = () => {
   const [lessons, setLessons] = useState<ILessonRes[]>([]);
   const [step, setStep] = useState<number>(0);
   const [uploadType, setUploadType] = useState<number>(0);
+  const [croppedUrl, setCropped] = useState<string | File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    SERVICES.GetLessons().then((res) => {
-      setLessons(res.data);
+    SERVICES.GetAnswerTypes().then((answerType) => {
+      setAnswerTypes(answerType.data);
+      SERVICES.GetLessons().then((lesson) => {
+        setLessons(lesson.data);
+      });
     });
 
     return () => {};
   }, []);
 
   const onClear = () => {
+    setUploadType(0);
     switch (step) {
       case 1:
         setQuestionPhoto(null);
@@ -53,40 +62,16 @@ const QuestionSend: React.FC = () => {
     }
   };
 
-  const onSubmit = () => {
-    setStep(1);
-  };
-
   const onBack = () => {
-    switch (step) {
-      case 1:
-        setStep(0);
-        break;
-      case 2:
-        setStep(1);
-        break;
-      case 3:
-        setStep(2);
-        break;
-      case 4:
-        setStep(3);
-        break;
-      case 5:
-        setStep(4);
-        break;
-      default:
-        break;
-    }
+    if (step <= 0) setStep(0);
+    else setStep((x) => x - 1);
   };
 
   const onNext = () => {
+    setUploadType(0);
     switch (step) {
       case 0:
-        if (
-          _.isEmpty(selectedLesson) ||
-          _.isEmpty(publisher) ||
-          _.isEmpty(testName)
-        ) {
+        if (_.isEmpty(lesson) || _.isEmpty(publisher) || _.isEmpty(testName)) {
           toast.error("Lütfen tüm alanları doldurun.");
           return;
         }
@@ -116,7 +101,7 @@ const QuestionSend: React.FC = () => {
       case 4:
         if (
           _.isEmpty(shapePhoto) &&
-          selectedLesson ===
+          lesson ===
             lessons.find((x) => x.name.toLocaleLowerCase() === "geometri")?._id
         ) {
           toast.error("Lütfen şekil ekleyin.");
@@ -129,7 +114,7 @@ const QuestionSend: React.FC = () => {
     }
   };
 
-  const uploadMethods = () => {
+  const uploadMethods = useMemo(() => {
     switch (step) {
       case 1:
         return {
@@ -157,88 +142,9 @@ const QuestionSend: React.FC = () => {
           setValue: () => null,
         };
     }
-  };
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const imageFiles = acceptedFiles.filter((file) =>
-      file.type.startsWith("image/")
-    );
-    setQuestionPhoto(URL.createObjectURL(imageFiles[0]));
-  }, []);
+  }, [answerPhoto, answerText, questionPhoto, shapePhoto, step]);
 
-  const onSave = (croppedImage: string, croppedFile: File) => {
-    if (!_.isElement(croppedFile) && !_.isNil(croppedImage)) {
-      setQuestionPhoto(croppedImage);
-      // let imageId = "";
-      // SERVICES.UploadImageFile({ file: croppedFile }).then((response) => {
-      //   imageId = response.data._id;
-      //   if (_.isEmpty(imageId)) {
-      //     toast.error("Resim yüklenemedi");
-      //     return;
-      //   }
-
-      //   SERVICES.AddQuestion({
-      //     lesson: selectedLesson,
-      //     question: imageId,
-      //   }).then(() => {
-      //     toast.success("Soru başarıyla yüklendi");
-      //   });
-
-      //   return true;
-      // });
-    }
-  };
-
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    isDragAccept,
-    isDragReject,
-  } = useDropzone({
-    onDrop,
-    accept: {
-      "image/png": [".png"],
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/gif": [".gif"],
-    },
-  });
-
-  const uploadArea = useMemo(() => {
-    switch (uploadType) {
-      case 1:
-        return (
-          <div
-            {...getRootProps()}
-            className="file-drop-zone border rounded border-dashed p-4"
-            style={{ minHeight: "100px" }}
-          >
-            <input {...getInputProps()} />
-            {isDragAccept && <p>Doğru dosya formatı.</p>}
-            {isDragReject && <p>Desteklenen formatlar: gif, jpg, jpeg, png</p>}
-            {!isDragActive && (
-              <p>
-                Dosyaları buraya bırakın veya bu alana tıklayıp dosya seçiniz.
-              </p>
-            )}
-          </div>
-        );
-
-      case 2:
-        return (
-          <Camera
-            onSave={onSave}
-            setPhoto={() => uploadMethods().setValue(null)}
-            photo={uploadMethods().value}
-          />
-        );
-
-      default:
-        return <></>;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uploadType]);
-
-  const step1 = useMemo(() => {
+  const firstStep = useMemo(() => {
     if (_.isEmpty(lessons)) return <p>{CONSTANTS.Strings.LOADING}</p>;
 
     return (
@@ -246,10 +152,10 @@ const QuestionSend: React.FC = () => {
         <div className="col-sm-12 col-md-6">
           <select
             onChange={(e) => {
-              setSelectedLesson(e.target.value);
+              setLesson(e.target.value);
             }}
-            className="form-select form-select-lg mb-3"
-            defaultValue={selectedLesson}
+            className="form-select form-select-lg mb-3 "
+            defaultValue={lesson}
           >
             <option value={""}>Ders Seçiniz</option>
             {lessons.map((lesson) => (
@@ -277,7 +183,7 @@ const QuestionSend: React.FC = () => {
           <input
             type="text"
             className="form-control"
-            placeholder="Test Adı"
+            placeholder="Test Adını Giriniz"
             value={testName}
             onChange={(e) => {
               setTestName(e.target.value);
@@ -286,135 +192,407 @@ const QuestionSend: React.FC = () => {
         </div>
       </div>
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessons, testName, step]);
+  }, [lesson, lessons, publisher, testName]);
 
-  const step2 = useMemo(() => {
+  const uploadFile = useMemo(() => {
     return (
       <>
-        <div className="row mt-3 justify-content-center">
-          <div className="col-sm-12 col-md-6 text-center">
-            <h5>Soru</h5>
-            <div className="row mt-3 justify-content-center">
-              <div className="col-sm-12 col-md-6">
-                {_.isEmpty(uploadMethods().value) ? (
-                  uploadType > 0 && !_.isNil(uploadArea) && uploadArea
-                ) : (
-                  <img
-                    src={uploadMethods().value ?? ""}
-                    alt="upload"
-                    className="img-fluid"
-                    width="90%"
-                  />
-                )}
-              </div>
-            </div>
-            <div className="button-conatiner" role="group">
-              <div>
+        <div className="row mt-3 justify-content-center text-center">
+          {step === 1 ? (
+            <h5>Sorunun Fotoğrafını Ekleyiniz.</h5>
+          ) : step === 2 ? (
+            <h5>Cevabın Fotoğrafı Ekleyiniz.</h5>
+          ) : step === 4 ? (
+            <h5>Şeklin Fotoğrafı Ekleyiniz.</h5>
+          ) : (
+            <></>
+          )}
+          <div className="col-sm-12 col-md-6">
+            {uploadType === 2 ? (
+              <Camera setPhoto={setCropped} />
+            ) : (
+              <img
+                src={uploadMethods.value ?? "https://fakeimg.pl/300x300?text=+"}
+                alt="upload"
+                className="img-fluid"
+                style={{ maxHeight: "300px" }}
+              />
+            )}
+          </div>
+        </div>
+        {_.isEmpty(uploadMethods.value) && (
+          <div className="d-flex mt-3 justify-content-center text-center">
+            <div className="filed-buttons">
+              <button className="next-btn" onClick={() => setUploadType(2)}>
+                <span className="material-symbols-rounded">camera</span>
+              </button>
+
+              <div className="input-group">
+                <input type="text" className="select-form" />
                 <button
-                  type="button"
-                  className="next-btn"
-                  disabled={step > 1}
-                  onClick={() => {
-                    setUploadType(2);
-                  }}
-                >
-                  Fotoğraf Çek
-                </button>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  className="next-btn"
-                  disabled={step > 1}
+                  className="input-group-button"
                   onClick={() => {
                     setUploadType(1);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.click();
+                    }
                   }}
                 >
-                  Dosya Seç
+                  Gözat
                 </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  accept=".png,.jpg,.jpeg,.gif"
+                  onChange={(e) => {
+                    if (_.isNil(e.target.files) || _.isEmpty(e.target.files))
+                      return;
+                    const file = e.target.files[0];
+                    if (!_.isNil(file)) {
+                      setCropped(URL.createObjectURL(file));
+                    }
+                  }}
+                />
               </div>
             </div>
           </div>
-        </div>
+        )}
       </>
     );
-  }, [step, uploadMethods, uploadType, uploadArea]);
+  }, [uploadMethods.value, uploadType, step]);
+
+  const textStep = useMemo(() => {
+    return (
+      <div className="row mt-3 justify-content-center">
+        <div className="col-sm-12 col-md-6">
+          <textarea
+            className="form-control"
+            placeholder="Metin Giriniz"
+            value={answerText ?? ""}
+            rows={6}
+            onChange={(e) => {
+              setAnswerText(e.target.value);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }, [answerText]);
+
+  const lastStep = useMemo(() => {
+    return (
+      <>
+        {_.isEmpty(shapePhoto) ? (
+          <div className="row mt-3 justify-content-center">
+            <div className="col-sx-12 col-md-3 m-3">
+              <img
+                src={questionPhoto ?? ""}
+                alt="question"
+                className="img-fluid "
+                style={{ height: "300px", alignItems: "center" }}
+              />
+            </div>
+            <div className="col-sx-12 col-md-3 m-3">
+              <img
+                src={answerPhoto ?? ""}
+                alt="question"
+                className="img-fluid"
+                style={{ height: "300px" }}
+              />
+            </div>
+            <div className="col-sx-12 col-md-3 m-3 border border-secondary">
+              <p>{answerText}</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="row mt-3 justify-content-center">
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <img
+                  src={questionPhoto ?? ""}
+                  alt="question"
+                  className="img-fluid"
+                  style={{ height: "300px" }}
+                />
+              </div>
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <img
+                  src={answerPhoto ?? ""}
+                  alt="question"
+                  className="img-fluid"
+                  style={{ height: "300px" }}
+                />
+              </div>
+            </div>
+            <div className="row justify-content-center">
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <p className="border border-secondary">{answerText}</p>
+              </div>
+              <div className="col-sm-12 col-md-4 m-3 centered-container">
+                <img
+                  src={shapePhoto ?? ""}
+                  alt="question"
+                  className="img-fluid"
+                  style={{ height: "300px" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  }, [answerPhoto, answerText, questionPhoto, shapePhoto]);
+
+  async function urlToFile(url: string): Promise<File> {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const fileName = "unknown";
+    const mimeType = blob.type || "application/octet-stream";
+    return new File([blob], fileName, { type: mimeType });
+  }
+
+  const afterSubmit = (isContinue: boolean): Promise<boolean> => {
+    setQuestionPhoto(null);
+    setAnswerPhoto(null);
+    setAnswerText(null);
+    setShapePhoto(null);
+    if (isContinue) {
+      setStep(1);
+    } else {
+      setLesson("");
+      setPublisher("");
+      setTestName("");
+      setStep(0);
+    }
+
+    return Promise.resolve(true);
+  };
+
+  const getAnswerTypeId = (code: number): string => {
+    return answerTypes.find((x) => x.code === code)?._id ?? "";
+  };
+
+  const onSubmit = async (isContinue: boolean) => {
+    if (checkRoles(CONSTANTS.Roles.TESTER_SOLVER)) {
+      if (_.isEmpty(lesson) || _.isEmpty(publisher) || _.isEmpty(testName)) {
+        toast.error("Lütfen ders, yayınevi ve test adını seçiniz");
+        return;
+      }
+
+      const questionFile = await urlToFile(questionPhoto!);
+
+      const questionImage = await SERVICES.UploadImageFile({
+        file: questionFile,
+      });
+
+      if (_.isNil(questionImage.data) || _.isEmpty(questionImage.data._id)) {
+        toast.error("Soru resmi yüklenemedi");
+        return;
+      }
+
+      const payload: IAddQuestionAndSolveReq = {
+        lesson,
+        question: questionImage.data._id,
+        answers: [],
+      };
+
+      const answerFile = await urlToFile(answerPhoto!);
+      const answerImage = await SERVICES.UploadImageFile({
+        file: answerFile,
+      });
+
+      if (_.isNil(answerImage.data) || _.isEmpty(answerImage.data._id)) {
+        toast.error("Cevap resmi yüklenemedi");
+        return;
+      }
+
+      payload.answers.push({
+        answerType: getAnswerTypeId(1),
+        fileAnswer: answerImage.data._id,
+      });
+
+      if (_.isEmpty(answerText)) {
+        toast.error("Cevap metni boş olamaz");
+        return;
+      }
+
+      payload.answers.push({
+        answerType: getAnswerTypeId(2),
+        textAnswer: answerText,
+      });
+
+      if (
+        _.isEmpty(shapePhoto) &&
+        lesson ===
+          lessons.find((x) => x.name.toLocaleLowerCase() === "geometri")?._id
+      ) {
+        toast.error("Şekil ekleyiniz");
+        return;
+      }
+
+      if (!_.isEmpty(shapePhoto)) {
+        const shapeFile = await urlToFile(shapePhoto!);
+        const shapeImage = await SERVICES.UploadImageFile({
+          file: shapeFile,
+        });
+
+        if (_.isNil(shapeImage.data) || _.isEmpty(shapeImage.data._id)) {
+          toast.error("Şekil yüklenemedi");
+          return;
+        }
+
+        payload.answers.push({
+          answerType: getAnswerTypeId(1),
+          fileAnswer: shapeImage.data._id,
+        });
+      }
+
+      payload.answers.push({
+        answerType: getAnswerTypeId(2),
+        textAnswer: publisher,
+      });
+
+      payload.answers.push({
+        answerType: getAnswerTypeId(2),
+        textAnswer: testName,
+      });
+
+      const question = await SERVICES.AddQuestionAndSolves(payload);
+
+      if (question.status >= 200 && question.status < 300) {
+        toast.success("Soru başarıyla yüklendi");
+        await afterSubmit(isContinue);
+        return;
+      } else {
+        toast.error("Soru yüklenemedi");
+        return;
+      }
+    }
+
+    if (checkRoles(CONSTANTS.Roles.TESTER)) {
+      const questionFile = await urlToFile(questionPhoto!);
+
+      const questionImage = await SERVICES.UploadImageFile({
+        file: questionFile,
+      });
+
+      if (_.isNil(questionImage.data) || _.isEmpty(questionImage.data._id)) {
+        toast.error("Resim yüklenemedi");
+        return;
+      }
+
+      const question = await SERVICES.AddQuestion({
+        lesson,
+        question: questionImage.data._id,
+      });
+
+      if (question.status >= 200 && question.status < 300) {
+        toast.success("Soru başarıyla yüklendi");
+        await afterSubmit(isContinue);
+        return;
+      } else {
+        toast.error("Soru yüklenemedi");
+        return;
+      }
+    }
+
+    if (checkRoles(CONSTANTS.Roles.SOLVER)) {
+      console.log("SOLVER");
+    }
+  };
 
   return (
     <div className="container p-3">
       <div className="step-container">
         <div className="steps">
-          <div>
-            <div className={`step ${step === 0 ? "active" : undefined}`}>1</div>
-            <span>Ders</span>
-          </div>
-          <div>
-            <div className={`step ${step === 1 ? "active" : undefined}`}>2</div>
-            <span>Soru</span>
-          </div>
-          <div>
-            <div className={`step ${step === 2 ? "active" : undefined}`}>3</div>
-            <span>Görsel</span>
-          </div>
-          <div>
-            <div className={`step ${step === 3 ? "active" : undefined}`}>4</div>
-            <span>Metin</span>
-          </div>
-          <div>
-            <div className={`step ${step === 4 ? "active" : undefined}`}>5</div>
-            <span>Şekil</span>
-          </div>
-          <div>
-            <div className={`step ${step === 5 ? "active" : undefined}`}>6</div>
-            <span>Son</span>
-          </div>
+          {stepTitles.map((title, index) => (
+            <div key={index}>
+              <div className={`step ${step === index ? "active" : undefined}`}>
+                {index + 1}
+              </div>
+              <span>{title}</span>
+            </div>
+          ))}
         </div>
       </div>
-      {step === 0 && step1}
-      {step === 1 && step2}
+      <div className="row mt-3 justify-content-center"></div>
+      {step === 0 && firstStep}
+      {(step === 1 || step === 2 || step === 4) && uploadFile}
+      {step === 3 && textStep}
+      {step === 5 && lastStep}
 
       {checkRoles(CONSTANTS.Roles.TESTER_SOLVER) && (
         <div className="row mt-3 justify-content-center">
           <div className="col-sm-12 col-md-6"></div>
         </div>
       )}
-      {!_.isNil(questionPhoto) && uploadType === 1 && (
-        <ImageCropModal
-          imageUrl={questionPhoto}
-          onClose={() => {
-            setQuestionPhoto(null);
-          }}
-          onSave={onSave}
-        />
-      )}
       <div className="row mt-3 justify-content-center">
         <div className="actions">
-          <button className="back-btn ms-2" onClick={onBack}>
-            ← GERİ
-          </button>
-          {(step === 1 || step === 2 || step === 3 || step === 4) && (
-            <button className="back-btn" onClick={onClear}>
-              TEMİZLE
-            </button>
+          <div className="back-btn ms-2" onClick={onBack}>
+            <span className="material-symbols-rounded">arrow_left_alt</span>
+            <span className="align-middle">GERİ</span>
+          </div>
+          {step >= 1 && step <= 4 && (
+            <div className="back-btn" onClick={onClear}>
+              <span className="material-symbols-rounded">delete</span>
+              <span className="align-middle">TEMİZLE</span>
+            </div>
           )}
-          {step !== 5 && (
-            <button className="next-btn me-2" onClick={onNext}>
-              İLERİ <span className="material-icons">home</span>
-            </button>
-          )}
-          {step === 5 && (
-            <div className=" me-2">
-              <button className="next-btn" onClick={onNext}>
-                DEVAM ET
-              </button>
-              <button className="finish-btn" onClick={onSubmit}>
-                BİTİR
-              </button>
+          {step !== 5 &&
+            (checkRoles(
+              CONSTANTS.Roles.TESTER_SOLVER,
+              CONSTANTS.Roles.SOLVER
+            ) ||
+              step === 0) && (
+              <div className="next-btn me-2" onClick={onNext}>
+                <span className="align-middle">İLERİ</span>
+                <span className="material-symbols-rounded">
+                  arrow_right_alt
+                </span>
+              </div>
+            )}
+          {(step === 5 ||
+            (!checkRoles(
+              CONSTANTS.Roles.TESTER_SOLVER,
+              CONSTANTS.Roles.SOLVER
+            ) &&
+              step === 1)) && (
+            <div className="d-flex me-2">
+              <Tooltip title="Soruyu kayıt eder. Aynı ders, yayınevi ve test adı ile soru ekler.">
+                <div className="next-btn" onClick={() => onSubmit(true)}>
+                  <span className="align-middle">DEVAM</span>
+                  <span className="material-symbols-rounded">reply_all</span>
+                </div>
+              </Tooltip>
+              <Tooltip title="Soruyu kayıt eder. İlk adıma döner.">
+                <div className="finish-btn" onClick={() => onSubmit(false)}>
+                  <span className="align-middle">BİTİR</span>
+                  <span className="material-symbols-rounded">send</span>
+                </div>
+              </Tooltip>
             </div>
           )}
         </div>
       </div>
+      {!_.isNil(croppedUrl) && (
+        <div className="text-center">
+          <ImageCropModal
+            imageUrl={
+              croppedUrl instanceof File
+                ? URL.createObjectURL(croppedUrl)
+                : croppedUrl
+            }
+            onClose={() => setCropped(null)}
+            onSave={(url: string) => {
+              if (_.isEmpty(url)) return;
+              uploadMethods.setValue(url);
+              setCropped(null);
+              setUploadType(0);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

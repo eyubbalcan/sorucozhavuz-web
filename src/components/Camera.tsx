@@ -1,19 +1,15 @@
 import "./Camera.scss";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import * as CONSTANTS from "../constants";
-import { ImageCropModal } from ".";
 import Webcam from "react-webcam";
 
 interface CameraProps {
-  photo: string | null;
-  setPhoto: React.Dispatch<React.SetStateAction<string | null>>;
-  onSave: (url: string, file: File) => void;
+  setPhoto: React.Dispatch<React.SetStateAction<string | File | null>>;
 }
 
-const Camera: React.FC<CameraProps> = ({ photo, setPhoto, onSave }) => {
+const Camera: React.FC<CameraProps> = ({ setPhoto }) => {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
-  const [isPhotoMode, setIsPhotoMode] = useState(false);
   const [webcamKey, setWebcamKey] = useState(0);
   const webcamRef = useRef<Webcam>(null);
 
@@ -47,7 +43,6 @@ const Camera: React.FC<CameraProps> = ({ photo, setPhoto, onSave }) => {
     const imageSrc = webcamRef.current.getScreenshot();
     if (imageSrc) {
       setPhoto(imageSrc);
-      setIsPhotoMode(true);
     }
   };
 
@@ -60,10 +55,6 @@ const Camera: React.FC<CameraProps> = ({ photo, setPhoto, onSave }) => {
       setSelectedDeviceId(devices[nextIndex].deviceId);
       setWebcamKey((prev) => prev + 1);
     }
-  };
-
-  const resetToCameraMode = () => {
-    setIsPhotoMode(false);
   };
 
   const showApp = useMemo(() => {
@@ -82,54 +73,41 @@ const Camera: React.FC<CameraProps> = ({ photo, setPhoto, onSave }) => {
 
     return (
       <>
-        {!isPhotoMode ? (
-          <Webcam
-            key={webcamKey}
-            ref={webcamRef}
-            audio={false}
-            screenshotFormat="image/png"
-            videoConstraints={{
-              deviceId: selectedDeviceId
-                ? { exact: selectedDeviceId }
-                : undefined,
-            }}
-            className="video"
-            muted
-            playsInline
-            autoPlay
-          />
-        ) : (
-          photo && (
-            <ImageCropModal
-              imageUrl={photo}
-              onClose={resetToCameraMode}
-              onSave={onSave}
-            />
-          )
-        )}
+        <Webcam
+          key={webcamKey}
+          ref={webcamRef}
+          audio={false}
+          screenshotFormat="image/png"
+          videoConstraints={{
+            deviceId: selectedDeviceId
+              ? { exact: selectedDeviceId }
+              : undefined,
+          }}
+          className="video"
+          muted
+          playsInline
+          autoPlay
+        />
         <button
           onClick={() => {
             captureImage();
           }}
           className="action-btn"
         >
-          {isPhotoMode ? (
-            <CONSTANTS.Feather.FiRefreshCw />
-          ) : (
-            <CONSTANTS.Feather.FiCamera />
-          )}
+          <CONSTANTS.Feather.FiCamera />
         </button>
         <button onClick={switchCamera} className="switch-btn">
           <CONSTANTS.Feather.FiRefreshCw />
         </button>
       </>
     );
-  }, [devices, selectedDeviceId, isPhotoMode, photo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devices, selectedDeviceId]);
 
   return (
     <div className="text-center">
       <div className="camera-container p-2">{showApp}</div>
-      {!isPhotoMode && devices.length > 1 && (
+      {devices.length > 1 && (
         <p>{`Kamera : ${
           devices.findIndex((device) => device.deviceId === selectedDeviceId) +
           1
