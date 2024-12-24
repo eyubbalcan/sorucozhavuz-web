@@ -10,7 +10,11 @@ const Header: React.FC = () => {
   return (
     <header className="bg-dark text-white">
       <nav className="navbar navbar-expand-lg navbar-dark px-3">
-        <Link to={Routes.ROOT} className="navbar-brand">
+        <Link
+          to={Routes.ROOT}
+          className="navbar-brand"
+          style={{ fontWeight: "800" }}
+        >
           Seduss Soru Havuzu
         </Link>
         <button
@@ -21,18 +25,27 @@ const Header: React.FC = () => {
           aria-controls="navbarNav"
           aria-expanded="false"
           aria-label="Toggle navigation"
+          style={{ fontWeight: "800" }}
         >
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link to={Routes.QUESTION_SEND} className="nav-link">
+              <Link
+                to={Routes.QUESTION_SEND}
+                className="nav-link"
+                style={{ fontWeight: "800" }}
+              >
                 Soru Gönder
               </Link>
             </li>
             <li className="nav-item">
-              <Link to={Routes.QUESTION_LIST} className="nav-link">
+              <Link
+                to={Routes.QUESTION_LIST}
+                className="nav-link"
+                style={{ fontWeight: "800" }}
+              >
                 Sorular
               </Link>
             </li>
@@ -57,7 +70,7 @@ const Header: React.FC = () => {
                 >
                   <li>
                     <a className="dropdown-item" href="#">
-                      Action
+                      Hesabım
                     </a>
                   </li>
                   <li>

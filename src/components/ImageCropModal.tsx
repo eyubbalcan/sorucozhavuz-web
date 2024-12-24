@@ -91,29 +91,31 @@ const ImageCropModal: React.FC<IImageCropModalProps> = ({
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
+            <div className="topbar d-flex justify-content-between p-2">
+              <div className="d-flex align-items-center">
+                <button
+                  style={{ marginRight: "10px" }}
+                  className="next-btn "
+                  onClick={() => handleRotate("left")}
+                >
+                  <Fa.FaUndo />
+                </button>
+
+                <button
+                  className="next-btn"
+                  onClick={() => handleRotate("right")}
+                >
+                  <Fa.FaRedo />
+                </button>
+              </div>
+            </div>
             <h5 className="modal-title">Resmi Kırp</h5>
+
             <button
               type="button"
               className="btn-close"
               onClick={onClose}
             ></button>
-          </div>
-
-          <div className="topbar d-flex justify-content-between p-2">
-            <div className="d-flex align-items-center">
-              <button
-                className="btn btn-secondary"
-                onClick={() => handleRotate("left")}
-              >
-                <Fa.FaUndo />
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => handleRotate("right")}
-              >
-                <Fa.FaRedo />
-              </button>
-            </div>
           </div>
 
           <div className="modal-body d-flex justify-content-center align-items-center">
@@ -122,7 +124,7 @@ const ImageCropModal: React.FC<IImageCropModalProps> = ({
               style={{
                 overflow: "hidden",
                 position: "relative",
-                width: "100%",
+                width: "90%",
                 height: "100%",
               }}
             >
@@ -162,11 +164,11 @@ const ImageCropModal: React.FC<IImageCropModalProps> = ({
             </div>
           </div>
           <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onClose}>
+            <button className="finish-btn" onClick={onClose}>
               Kapat
             </button>
-            <button className="btn btn-primary" onClick={handleSave}>
-              Kaydet
+            <button className="next-btn" onClick={handleSave}>
+              Kaydet ve Kapat
             </button>
           </div>
         </div>
