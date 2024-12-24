@@ -36,7 +36,6 @@ const ImageCropModal: React.FC<IImageCropModalProps> = ({
     if (cropped === null) return;
     const url = URL.createObjectURL(cropped);
     onSave(url, cropped);
-    onClose();
   };
 
   const handleRotate = (direction: "left" | "right") => {
@@ -167,7 +166,7 @@ const ImageCropModal: React.FC<IImageCropModalProps> = ({
               Kapat
             </button>
             <button className="btn btn-primary" onClick={handleSave}>
-              Kaydet ve Kapat
+              Kaydet
             </button>
           </div>
         </div>

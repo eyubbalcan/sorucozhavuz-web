@@ -58,6 +58,7 @@ export interface IQuestionRes extends CONSTANTS.IResponseModel {
   question: IImageFileRes;
   isSolved: boolean;
   isControlled: boolean;
+  result: string | null;
   sentBy: IUserRes | null;
   solvedBy: IUserRes | null;
   controlledBy: IUserRes | null;
