@@ -39,16 +39,65 @@ export const AddQuestionAndSolves = async (
   return response;
 };
 
-export const GetQuestions = async (lessonId: string) => {
+export const GetAnswerTypes = async () => {
+  const response: AxiosResponse<IAnswerTypeRes[]> = await api.get(
+    `/answerType`
+  );
+  return response;
+};
+
+export const GetQuestionsByLesson = async (lessonId: string) => {
   const response: AxiosResponse<IQuestionRes[]> = await api.get(
     `/question/questionsByLesson/${lessonId}`
   );
   return response;
 };
 
-export const GetAnswerTypes = async () => {
-  const response: AxiosResponse<IAnswerTypeRes[]> = await api.get(
-    `/answerType`
+export const GetUnsolvedQuestionsByLesson = async (lessonId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/unsolvedQuestionsByLesson/${lessonId}`
+  );
+  return response;
+};
+
+export const GetSolvedQuestionsByLesson = async (lessonId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/solvedQuestionsByLesson/${lessonId}`
+  );
+  return response;
+};
+
+export const GetUnControlQuestionsByLesson = async (lessonId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/uncontrolledQuestionsByLesson/${lessonId}`
+  );
+  return response;
+};
+
+export const GetControlledQuestionsByLesson = async (lessonId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/controlledQuestionsByLesson/${lessonId}`
+  );
+  return response;
+};
+
+export const GetQuestionBySolver = async (solverId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/questionsBySolver/${solverId}`
+  );
+  return response;
+};
+
+export const GetApprovedQuestionBySolver = async (solverId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/approvedQuestionsBySolver/${solverId}`
+  );
+  return response;
+};
+
+export const GetRejectedQuestionBySolver = async (solverId: string) => {
+  const response: AxiosResponse<IQuestionRes[]> = await api.get(
+    `/question/rejectedQuestionsBySolver/${solverId}`
   );
   return response;
 };

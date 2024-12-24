@@ -17,14 +17,16 @@ import { checkRoles } from "../../utils";
 const publishers = ["Hız Yayınları", "3D Yayınları"];
 const stepTitles = ["Ders", "Soru", "Görsel", "Metin", "Şekil", "Son"];
 const classRooms = [
-  "5.Sınıf",
-  "6.Sınıf",
-  "7.Sınıf",
-  "8.Sınıf",
-  "9.Sınıf",
-  "10.Sınıf",
-  "11.Sınıf",
+  "TYT",
+  "AYT",
   "12.Sınıf",
+  "11.Sınıf",
+  "10.Sınıf",
+  "9.Sınıf",
+  "8.Sınıf",
+  "7.Sınıf",
+  "6.Sınıf",
+  "5.Sınıf",
 ];
 
 const QuestionSend: React.FC = () => {
@@ -82,7 +84,12 @@ const QuestionSend: React.FC = () => {
     setUploadType(0);
     switch (step) {
       case 0:
-        if (_.isEmpty(lesson) || _.isEmpty(publisher) || _.isEmpty(testName)) {
+        if (
+          _.isEmpty(lesson) ||
+          _.isEmpty(publisher) ||
+          _.isEmpty(testName) ||
+          _.isEmpty(classRoom)
+        ) {
           toast.error("Lütfen tüm alanları doldurun.");
           return;
         }
@@ -339,12 +346,11 @@ const QuestionSend: React.FC = () => {
                   minWidth: "300px",
                   minHeight: "300px",
                   resize: "none",
-                  overflowX: "hidden",
+                  overflowX: "auto",
                   whiteSpace: "pre-line",
                 }}
-              >
-                {answerText}
-              </textarea>
+                value={answerText || ""}
+              />
             </div>
           </div>
         ) : (
@@ -377,12 +383,11 @@ const QuestionSend: React.FC = () => {
                       minWidth: "300px",
                       minHeight: "300px",
                       resize: "none",
-                      overflowX: "hidden",
+                      overflowX: "auto",
                       whiteSpace: "pre-line",
                     }}
-                  >
-                    {answerText}
-                  </textarea>
+                    value={answerText || ""}
+                  />
                 </div>
               </div>
               <div className="col-sm-12 col-md-4 m-3 centered-container">
@@ -431,8 +436,13 @@ const QuestionSend: React.FC = () => {
 
   const onSubmit = async (isContinue: boolean) => {
     if (checkRoles(CONSTANTS.Roles.TESTER_SOLVER)) {
-      if (_.isEmpty(lesson) || _.isEmpty(publisher) || _.isEmpty(testName)) {
-        toast.error("Lütfen ders, yayınevi ve test adını seçiniz");
+      if (
+        _.isEmpty(lesson) ||
+        _.isEmpty(publisher) ||
+        _.isEmpty(testName) ||
+        _.isEmpty(classRoom)
+      ) {
+        toast.error("Lütfen ders, yayınevi, sınıf ve test adını seçiniz");
         return;
       }
 
@@ -514,12 +524,10 @@ const QuestionSend: React.FC = () => {
         textAnswer: testName,
       });
 
-      if(!_.isEmpty(classRoom)){
-        payload.answers.push({
-          answerType: getAnswerTypeId(2),
-          textAnswer: classRoom,
-        });
-      }
+      payload.answers.push({
+        answerType: getAnswerTypeId(2),
+        textAnswer: classRoom,
+      });
 
       const question = await SERVICES.AddQuestionAndSolves(payload);
 
@@ -642,7 +650,12 @@ const QuestionSend: React.FC = () => {
                 ? URL.createObjectURL(croppedUrl)
                 : croppedUrl
             }
-            onClose={() => setCropped(null)}
+            onClose={() => {
+              fileInputRef.current!.value = "";
+              uploadMethods.setValue(null);
+              setCropped(null);
+              setUploadType(0);
+            }}
             onSave={(url: string) => {
               if (_.isEmpty(url)) return;
               uploadMethods.setValue(url);
